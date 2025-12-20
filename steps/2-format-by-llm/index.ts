@@ -1,4 +1,4 @@
-import { User } from '../../rakutenai/chat'
+import { User } from '@evex/rakutenai'
 import { Glob } from 'bun'
 import { existsSync } from 'node:fs'
 import * as path from 'node:path'
@@ -24,7 +24,7 @@ async function processFile(filePath: string) {
   })
 
   async function processSection(section: string) {
-    using thread = await user.createThread()
+    const thread = await user.createThread()
     const stream = thread.sendMessage({
       mode: 'AI_READ',
       contents: [
@@ -62,6 +62,7 @@ async function processFile(filePath: string) {
         text += chunk.text
       }
     }
+    thread.close()
     return text
   }
 

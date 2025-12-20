@@ -29,6 +29,7 @@ type MetadataRow = MetadataItem & {
 }
 
 const LEVEL_KEYS = ['pre2', 'pre1', '5', '4', '3', '2', '1'] as const
+type LevelKey = (typeof LEVEL_KEYS)[number]
 
 function safeJsonParse(line: string): MetadataItem | null {
   try {
@@ -69,6 +70,18 @@ function formatNumber(value: number | undefined, digits = 3): string {
   return value.toFixed(digits)
 }
 
+function getSortValue(row: MetadataRow, metric: 'count' | 'rank' | 'score', level: LevelKey): number {
+  if (metric === 'count') return row.count?.[level] ?? 0
+  if (metric === 'rank') return row.rank?.[level] ?? Number.NEGATIVE_INFINITY
+  return row.score?.[level] ?? Number.NEGATIVE_INFINITY
+}
+
+function formatSortValue(value: number, metric: 'count' | 'rank' | 'score'): string {
+  if (!Number.isFinite(value)) return '-'
+  if (metric === 'count') return String(Math.trunc(value))
+  return value.toFixed(3)
+}
+
 export default function MetadataViewer() {
   const [rows, setRows] = createSignal<MetadataRow[]>([])
   const [loading, setLoading] = createSignal(true)
@@ -81,8 +94,9 @@ export default function MetadataViewer() {
   const [showWords, setShowWords] = createSignal(true)
   const [showPhrases, setShowPhrases] = createSignal(true)
   const [minCount, setMinCount] = createSignal(0)
-  const [sortKey, setSortKey] = createSignal<'word' | 'sumCount' | 'maxCount'>('word')
-  const [sortDir, setSortDir] = createSignal<'asc' | 'desc'>('asc')
+  const [sortMetric, setSortMetric] = createSignal<'count' | 'rank' | 'score'>('rank')
+  const [sortLevel, setSortLevel] = createSignal<LevelKey>('5')
+  const [sortDir, setSortDir] = createSignal<'asc' | 'desc'>('desc')
   const [page, setPage] = createSignal(1)
   const [pageSize, setPageSize] = createSignal(50)
   const [selectedId, setSelectedId] = createSignal<number | null>(null)
@@ -157,7 +171,8 @@ export default function MetadataViewer() {
     showWords()
     showPhrases()
     minCount()
-    sortKey()
+    sortMetric()
+    sortLevel()
     sortDir()
     setPage(1)
   })
@@ -183,15 +198,17 @@ export default function MetadataViewer() {
   })
 
   const sorted = createMemo(() => {
-    const key = sortKey()
+    const metric = sortMetric()
+    const level = sortLevel()
     const dir = sortDir()
     const list = filtered().slice()
     const mul = dir === 'asc' ? 1 : -1
 
     list.sort((a, b) => {
-      if (key === 'word') return a.word.localeCompare(b.word) * mul
-      if (key === 'sumCount') return (a.sumCount - b.sumCount) * mul
-      return (a.maxCount - b.maxCount) * mul
+      const va = getSortValue(a, metric, level)
+      const vb = getSortValue(b, metric, level)
+      if (va !== vb) return (va - vb) * mul
+      return a.word.localeCompare(b.word)
     })
 
     return list
@@ -262,15 +279,25 @@ export default function MetadataViewer() {
 
           <div class="flex flex-wrap items-end gap-3">
             <label class="text-sm">
-              sort
+              sort metric
               <select
                 class="mt-1 w-40 rounded-md border px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-300"
-                value={sortKey()}
-                onChange={(e) => setSortKey(e.currentTarget.value as 'word' | 'sumCount' | 'maxCount')}
+                value={sortMetric()}
+                onChange={(e) => setSortMetric(e.currentTarget.value as 'count' | 'rank' | 'score')}
               >
-                <option value="word">word</option>
-                <option value="sumCount">sumCount</option>
-                <option value="maxCount">maxCount</option>
+                <option value="count">count</option>
+                <option value="rank">rank</option>
+                <option value="score">score</option>
+              </select>
+            </label>
+            <label class="text-sm">
+              level
+              <select
+                class="mt-1 w-28 rounded-md border px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-300"
+                value={sortLevel()}
+                onChange={(e) => setSortLevel(e.currentTarget.value as LevelKey)}
+              >
+                <For each={LEVEL_KEYS}>{(key) => <option value={key}>{key}</option>}</For>
               </select>
             </label>
             <label class="text-sm">
@@ -348,6 +375,9 @@ export default function MetadataViewer() {
                 <th class="px-3 py-2">word</th>
                 <th class="px-3 py-2">class</th>
                 <th class="px-3 py-2">translation</th>
+                <th class="w-28 px-3 py-2 text-right">
+                  {sortLevel()} {sortMetric()}
+                </th>
                 <th class="w-24 px-3 py-2 text-right">sum</th>
                 <th class="w-24 px-3 py-2 text-right">max</th>
                 <th class="px-3 py-2">counts</th>
@@ -375,6 +405,9 @@ export default function MetadataViewer() {
                     </td>
                     <td class="whitespace-nowrap px-3 py-2">{row.primaryClass}</td>
                     <td class="min-w-96 px-3 py-2">{row.primaryTranslation}</td>
+                    <td class="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">
+                      {formatSortValue(getSortValue(row, sortMetric(), sortLevel()), sortMetric())}
+                    </td>
                     <td class="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">{row.sumCount}</td>
                     <td class="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">{row.maxCount}</td>
                     <td class="whitespace-nowrap px-3 py-2 font-mono text-xs text-slate-600">

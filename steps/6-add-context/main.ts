@@ -2,7 +2,7 @@
 
 import { streamText } from 'ai'
 import dedent from 'ts-dedent'
-import { rakutenAI } from '../../rakutenai/ai'
+import { rakutenAI } from '@evex/rakutenai'
 import { tqdm, TqdmProgress } from 'node-console-progress-bar-tqdm'
 import { TextLineStream } from '@std/streams'
 import {
