@@ -266,7 +266,7 @@ export default function MetadataViewer() {
               <select
                 class="mt-1 w-40 rounded-md border px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-300"
                 value={sortKey()}
-                onChange={(e) => setSortKey(e.currentTarget.value as typeof sortKey extends () => infer T ? T : never)}
+                onChange={(e) => setSortKey(e.currentTarget.value as 'word' | 'sumCount' | 'maxCount')}
               >
                 <option value="word">word</option>
                 <option value="sumCount">sumCount</option>
