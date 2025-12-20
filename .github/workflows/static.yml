@@ -37,14 +37,14 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - name: build
         run: |
-          cd data
+          cd viewer
           bun i
           BASE_URL=/eiken-vocab/ bun run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
-          path: './data/dist'
+          path: './viewer/dist'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
