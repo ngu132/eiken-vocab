@@ -82,6 +82,28 @@ function formatSortValue(value: number, metric: 'count' | 'rank' | 'score'): str
   return value.toFixed(3)
 }
 
+function sanitizeTsvField(value: string): string {
+  return value.replaceAll('\t', ' ').replaceAll('\r', ' ').replaceAll('\n', ' ').trim()
+}
+
+function getQuizletDefinition(row: MetadataRow): string {
+  const meanings = Array.isArray(row.meanings) ? row.meanings : []
+  const translations = meanings
+    .map((m) => (typeof m.translation === 'string' ? m.translation.trim() : ''))
+    .filter((t) => t.length > 0)
+
+  if (translations.length === 0) return row.primaryTranslation
+
+  const seen = new Set<string>()
+  const uniq: string[] = []
+  for (const t of translations) {
+    if (seen.has(t)) continue
+    seen.add(t)
+    uniq.push(t)
+  }
+  return uniq.join(' / ')
+}
+
 export default function MetadataViewer() {
   const [rows, setRows] = createSignal<MetadataRow[]>([])
   const [loading, setLoading] = createSignal(true)
@@ -89,6 +111,7 @@ export default function MetadataViewer() {
   const [parsed, setParsed] = createSignal(0)
   const [total, setTotal] = createSignal(0)
   const [badLines, setBadLines] = createSignal(0)
+  const [starSkipped, setStarSkipped] = createSignal(0)
 
   const [query, setQuery] = createSignal('')
   const [showWords, setShowWords] = createSignal(true)
@@ -100,6 +123,7 @@ export default function MetadataViewer() {
   const [page, setPage] = createSignal(1)
   const [pageSize, setPageSize] = createSignal(50)
   const [selectedId, setSelectedId] = createSignal<number | null>(null)
+  const [copyStatus, setCopyStatus] = createSignal<'idle' | 'copied' | 'failed'>('idle')
 
   onMount(async () => {
     setLoading(true)
@@ -125,10 +149,12 @@ export default function MetadataViewer() {
     setTotal(lines.length)
     setParsed(0)
     setBadLines(0)
+    setStarSkipped(0)
 
     const parsedRows: MetadataRow[] = []
     let index = 0
     let bad = 0
+    let skipped = 0
 
     const parseChunk = () => {
       const chunkSize = 500
@@ -137,6 +163,10 @@ export default function MetadataViewer() {
         const item = safeJsonParse(lines[index])
         if (!item || typeof item.word !== 'string') {
           bad += 1
+          continue
+        }
+        if (item.word.includes('☆')) {
+          skipped += 1
           continue
         }
 
@@ -153,6 +183,7 @@ export default function MetadataViewer() {
 
       setParsed(index)
       setBadLines(bad)
+      setStarSkipped(skipped)
 
       if (index < lines.length) {
         setTimeout(parseChunk, 0)
@@ -231,6 +262,45 @@ export default function MetadataViewer() {
     if (id === null) return null
     return rows().find((row) => row.id === id) ?? null
   })
+
+  const copyQuizletTsv = async () => {
+    const items = sorted()
+    const lines = items.map((row) => {
+      const term = sanitizeTsvField(row.word)
+      const def = sanitizeTsvField(getQuizletDefinition(row))
+      return `${term}\t${def}`
+    })
+
+    const tsv = lines.join('\n') + '\n'
+
+    try {
+      await navigator.clipboard.writeText(tsv)
+      setCopyStatus('copied')
+      setTimeout(() => setCopyStatus('idle'), 1500)
+      return
+    } catch {
+      // fall through
+    }
+
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = tsv
+      textarea.style.position = 'fixed'
+      textarea.style.left = '-9999px'
+      textarea.style.top = '0'
+      document.body.appendChild(textarea)
+      textarea.focus()
+      textarea.select()
+      const ok = document.execCommand('copy')
+      textarea.remove()
+      if (!ok) throw new Error('copy failed')
+      setCopyStatus('copied')
+      setTimeout(() => setCopyStatus('idle'), 1500)
+    } catch {
+      setCopyStatus('failed')
+      setTimeout(() => setCopyStatus('idle'), 2500)
+    }
+  }
 
   return (
     <div class="space-y-4">
@@ -331,12 +401,23 @@ export default function MetadataViewer() {
           <div>
             <Show when={!loading()} fallback={<span>loading... {parsed()}/{total()}</span>}>
               <span>
-                loaded {rows().length.toLocaleString()} rows (bad: {badLines().toLocaleString()}) / filtered{' '}
+                loaded {rows().length.toLocaleString()} rows (bad: {badLines().toLocaleString()}, ☆ skipped:{' '}
+                {starSkipped().toLocaleString()}) / filtered{' '}
                 {sorted().length.toLocaleString()}
               </span>
             </Show>
           </div>
           <div class="flex items-center gap-2">
+            <button
+              class="rounded-md border bg-white px-3 py-1 disabled:opacity-50"
+              onClick={copyQuizletTsv}
+              disabled={loading() || sorted().length === 0}
+              title="英単語<TAB>日本語 の TSV をクリップボードへコピー"
+            >
+              <Show when={copyStatus() === 'copied'} fallback={copyStatus() === 'failed' ? 'Copy failed' : 'Copy for Quizlet'}>
+                Copied
+              </Show>
+            </button>
             <button
               class="rounded-md border bg-white px-3 py-1 disabled:opacity-50"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
