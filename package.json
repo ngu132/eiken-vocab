@@ -1,0 +1,28 @@
+{
+  "name": "eiken",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.9",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@ai-sdk/provider": "^2.0.0",
+    "@ai-sdk/provider-utils": "^3.0.19",
+    "@std/streams": "npm:@jsr/std__streams",
+    "@valibot/to-json-schema": "^1.5.0",
+    "ai": "^5.0.116",
+    "node-console-progress-bar-tqdm": "^1.0.4",
+    "node-html-parser": "^7.0.1",
+    "p-limit": "^7.2.0",
+    "ts-dedent": "^2.2.0",
+    "valibot": "^1.2.0"
+  },
+  "scripts": {
+    "step:3:parse-llm-output": "bun steps/3-parse-llm-output/output_html_to_ast_json.ts --input data/output --output data/parsed --overwrite"
+  }
+}
