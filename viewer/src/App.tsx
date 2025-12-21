@@ -1,4 +1,4 @@
-import { createSignal, onMount } from 'solid-js'
+import { } from 'solid-js'
 import './App.css'
 import MetadataViewer from './MetadataViewer'
 
@@ -60,22 +60,8 @@ function HFMarkIcon(props: { class?: string }) {
   )
 }
 function App() {
-  const [isDark, setIsDark] = createSignal(false)
-
-  onMount(() => {
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDark(true)
-    }
-  })
-
   return (
-    <div
-      class={`flex h-screen flex-col overflow-hidden font-sans transition-colors duration-300 ${
-        isDark()
-          ? 'dark bg-slate-950 text-slate-100'
-          : 'bg-[#f8fafc] text-slate-900'
-      }`}
-    >
+    <div class="flex h-screen flex-col overflow-hidden font-sans transition-colors duration-300 bg-[#f8fafc] text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <header class="z-10 shrink-0 border-b border-slate-200/80 bg-white/70 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80">
         <div class="mx-auto flex max-w-400 items-center justify-between gap-4 px-6 py-4">
           <div class="flex items-center gap-3 min-w-0">
@@ -97,7 +83,7 @@ function App() {
               </svg>
             </div>
             <div class="min-w-0">
-              <h1 class="truncate text-xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+              <h1 class="truncate text-xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent dark:from-white dark:to-slate-400">
                 Eiken Vocab Viewer
               </h1>
               <p class="truncate text-xs font-medium text-slate-500 uppercase tracking-wider">
@@ -107,45 +93,6 @@ function App() {
           </div>
 
           <div class="flex items-center gap-4 shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsDark(!isDark())}
-              class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
-              title={isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {isDark() ? (
-                <svg
-                  class="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <title>Light Mode</title>
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  class="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <title>Dark Mode</title>
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                  />
-                </svg>
-              )}
-            </button>
-
             <div class="flex items-center gap-2 rounded-full bg-slate-100 p-1 dark:bg-slate-800">
               <a
                 class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
@@ -157,7 +104,7 @@ function App() {
                 <GithubMarkIcon class="h-5 w-5" />
               </a>
               <a
-                class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm"
+                class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
                 href="https://huggingface.co/datasets/nakasyou/eiken-vocab"
                 target="_blank"
                 rel="noopener noreferrer"
