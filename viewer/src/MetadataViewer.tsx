@@ -467,6 +467,7 @@ export default function MetadataViewer() {
           </div>
           <div class="flex items-center gap-2">
             <button
+              type="button"
               class="rounded-md border bg-white px-3 py-1 disabled:opacity-50"
               onClick={copyQuizletTsv}
               disabled={loading() || sorted().length === 0}
@@ -482,6 +483,7 @@ export default function MetadataViewer() {
               </Show>
             </button>
             <button
+              type="button"
               class="rounded-md border bg-white px-3 py-1 disabled:opacity-50"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page() <= 1}
@@ -492,6 +494,7 @@ export default function MetadataViewer() {
               {page()} / {totalPages()}
             </span>
             <button
+              type="button"
               class="rounded-md border bg-white px-3 py-1 disabled:opacity-50"
               onClick={() => setPage((p) => Math.min(totalPages(), p + 1))}
               disabled={page() >= totalPages()}
@@ -601,6 +604,7 @@ export default function MetadataViewer() {
                 </div>
               </div>
               <button
+                type="button"
                 class="rounded-md border bg-white px-3 py-1 text-sm"
                 onClick={() => setSelectedId(null)}
               >
