@@ -383,8 +383,8 @@ export default function MetadataViewer() {
                       type="button"
                       onClick={() => item.set(!item.get())}
                       class={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${item.get()
-                          ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200 dark:bg-slate-700 dark:text-indigo-400 dark:ring-slate-600'
-                          : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                        ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200 dark:bg-slate-700 dark:text-indigo-400 dark:ring-slate-600'
+                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                         }`}
                     >
                       <div
@@ -416,7 +416,7 @@ export default function MetadataViewer() {
             <div class="flex flex-wrap items-center gap-3">
               <div class="flex items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
                 <select
-                  class="rounded-lg border-none bg-transparent px-2 py-1.5 text-xs font-semibold text-slate-600 focus:ring-0 dark:text-slate-300"
+                  class="rounded-lg border-none bg-slate-50 px-2 py-1.5 text-xs font-semibold text-slate-600 focus:ring-0 dark:bg-slate-800 dark:text-slate-300"
                   value={sortMetric()}
                   onChange={(e) => {
                     const value = e.currentTarget.value
@@ -434,7 +434,7 @@ export default function MetadataViewer() {
                 </select>
                 <div class="h-4 w-px bg-slate-300 dark:bg-slate-700" />
                 <select
-                  class="rounded-lg border-none bg-transparent px-2 py-1.5 text-xs font-semibold text-slate-600 focus:ring-0 dark:text-slate-300"
+                  class="rounded-lg border-none bg-slate-50 px-2 py-1.5 text-xs font-semibold text-slate-600 focus:ring-0 dark:bg-slate-800 dark:text-slate-300"
                   value={sortLevel()}
                   onChange={(e) => {
                     const value = e.currentTarget.value
@@ -539,8 +539,8 @@ export default function MetadataViewer() {
                 type="button"
                 onClick={copyQuizletTsv}
                 class={`flex items-center gap-1.5 rounded-lg px-2 py-1 transition-all ${copyStatus() === 'copied'
-                    ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30'
-                    : 'hover:text-slate-600 hover:bg-slate-200 dark:hover:text-slate-300 dark:hover:bg-slate-800'
+                  ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30'
+                  : 'hover:text-slate-600 hover:bg-slate-200 dark:hover:text-slate-300 dark:hover:bg-slate-800'
                   }`}
               >
                 <svg
@@ -601,8 +601,8 @@ export default function MetadataViewer() {
                     <tr
                       onClick={() => setSelectedId(row.id)}
                       class={`group cursor-pointer transition-all hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 ${selectedId() === row.id
-                          ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-200 dark:bg-indigo-900/40 dark:ring-indigo-700/50'
-                          : ''
+                        ? 'bg-indigo-50 ring-1 ring-inset ring-indigo-200 dark:bg-indigo-900/40 dark:ring-indigo-700/50'
+                        : ''
                         }`}
                     >
                       <td class="py-4 pl-6 pr-3 font-mono text-xs text-slate-400 dark:text-slate-600">

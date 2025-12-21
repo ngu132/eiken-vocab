@@ -2,6 +2,29 @@
 
 /* Sleek Scrollbar Styling */
 @layer base {
+    :root {
+        color-scheme: light dark;
+    }
+
+    .dark {
+        color-scheme: dark;
+    }
+
+    /* Fix for native select dropdowns in dark mode */
+    .dark select {
+        background-color: #1e293b;
+        /* slate-800 */
+        color: #f1f5f9;
+        /* slate-100 */
+    }
+
+    .dark option {
+        background-color: #0f172a;
+        /* slate-950 */
+        color: #f8fafc;
+        /* slate-50 */
+    }
+
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
