@@ -73,8 +73,6 @@ function App() {
           </div>
           <div class="shrink-0">
             <div class="flex items-center gap-3 text-sm text-slate-600">
-              <span>Solid + Vite</span>
-              <div class="h-4 w-px bg-slate-200" aria-hidden="true" />
               <a
                 class="inline-flex items-center gap-1 rounded px-1 py-0.5 text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
                 href="https://github.com/pnsk-lab/eiken-vocab"
