@@ -1,4 +1,4 @@
-import type { Text } from "./text"
+import type { Text } from './text'
 
 export interface EmailContent {
   type: 'EmailContent'

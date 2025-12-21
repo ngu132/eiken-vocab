@@ -1,9 +1,9 @@
+import { mkdir } from 'node:fs/promises'
+import * as path from 'node:path'
 import { Glob } from 'bun'
 import type { Test } from '../../ast'
 import type { Section } from '../../ast/section'
 import type { Text } from '../../ast/text'
-import * as path from 'node:path'
-import { mkdir } from 'node:fs/promises'
 
 const stringifyText = (text: Text): string => {
   return text.chunks
@@ -161,27 +161,36 @@ const processSection = (data: Section) => {
   }
   return []
 }
+
+// biome-ignore lint/suspicious/noControlCharactersInRegex: 正規化用
+const nonASCII = /[^\x00-\x7F]+/g
+
 const processJSON = (data: Test) => {
   const sections = [...data.listeningSections, ...data.readingSections]
   let sources: string[] = []
   for (const section of sections) {
     sources = sources.concat(processSection(section))
   }
-  sources = sources.map(input => {
+  sources = sources.map((input) => {
     let cur = input
     cur = cur.trim()
-    cur = cur.replaceAll('’', "'")
+    cur = cur
+      .replaceAll('’', "'")
       .replaceAll('“', '"')
       .replaceAll('”', '"')
       .replaceAll('―', '-')
       .replaceAll('…', '...')
+      .replaceAll(nonASCII, '')
     return cur
   })
   return sources
 }
 for await (const jsonPath of new Glob('./data/parsed/*.json').scan()) {
   const data: Test = await Bun.file(jsonPath).json()
-  const outputPath = path.join('data/wordlist-sources', `${path.basename(jsonPath)}`)
+  const outputPath = path.join(
+    'data/wordlist-sources',
+    `${path.basename(jsonPath)}`,
+  )
   await mkdir(path.dirname(outputPath), { recursive: true })
   const output = processJSON(data)
   await Bun.write(outputPath, JSON.stringify(output, null, 2))

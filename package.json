@@ -24,6 +24,8 @@
     "valibot": "^1.2.0"
   },
   "scripts": {
+    "lint": "biome check",
+    "fmt": "biome check --fix --unsafe",
     "step:3:parse-llm-output": "bun steps/3-parse-llm-output/output_html_to_ast_json.ts --input data/output --output data/parsed --overwrite"
   }
 }

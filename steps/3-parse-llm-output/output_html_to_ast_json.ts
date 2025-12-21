@@ -1,11 +1,11 @@
-import {
-  parse,
-  type HTMLElement,
-  type Node as HtmlNode,
-  TextNode,
-} from 'node-html-parser'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
+import {
+  type HTMLElement,
+  type Node as HtmlNode,
+  parse,
+  TextNode,
+} from 'node-html-parser'
 
 type Chunk =
   | { type: 'JapaneseChunk'; text: string }
@@ -141,7 +141,10 @@ type ListeningSection =
   | ReallifeSection
   | SelectSentenceByEnglishSentenceSection
   | SelectResponseByConversationSection
-type ContentUnderstanding = SelectTrueSentence | SentenceCompletion | ContentCloze
+type ContentUnderstanding =
+  | SelectTrueSentence
+  | SentenceCompletion
+  | ContentCloze
 
 type ReadingSection =
   | ReadContentAndAnswerSection
@@ -165,7 +168,9 @@ function normalizeWs(text: string): string {
   return text.replace(/\s+/g, ' ').trim()
 }
 
-function parseQuestionIndex(node: HTMLElement | null | undefined): number | undefined {
+function parseQuestionIndex(
+  node: HTMLElement | null | undefined,
+): number | undefined {
   const raw = node?.getAttribute('index')
   if (!raw) return undefined
   const n = Number(raw)
@@ -311,10 +316,13 @@ function parseSentenceCompletion(question: HTMLElement): SentenceCompletion {
   }
 }
 
-function parseContentUnderstanding(question: HTMLElement): ContentUnderstanding {
+function parseContentUnderstanding(
+  question: HTMLElement,
+): ContentUnderstanding {
   const qType = (question.getAttribute('type') ?? '').toLowerCase()
   const body = question.querySelector('body')
-  if (qType === 'completion' || hasBlank(body)) return parseSentenceCompletion(question)
+  if (qType === 'completion' || hasBlank(body))
+    return parseSentenceCompletion(question)
   return parseSelectTrueSentence(question)
 }
 
@@ -412,7 +420,10 @@ function parseCircledWordList(bodyText: string): { n: number; text: string }[] {
   const out: { n: number; text: string }[] = []
   for (let i = 0; i < hits.length; i++) {
     const start = hits[i]?.index ?? 0
-    const end = i + 1 < hits.length ? (hits[i + 1]?.index ?? bodyText.length) : bodyText.length
+    const end =
+      i + 1 < hits.length
+        ? (hits[i + 1]?.index ?? bodyText.length)
+        : bodyText.length
     const marker = hits[i]?.[0] ?? ''
     const n = CIRCLED_MAP[marker]
     if (!n) continue
@@ -459,33 +470,40 @@ function parseWordOrderSection(
 ): JapaneseTranslateWordOrderCombinationSection {
   let blankIndices = detectBlankIndices(hintText)
   if (!blankIndices.length) {
-    blankIndices = detectBlankIndices(questions.map((q) => normalizeWs(q.text)).join(' '))
+    blankIndices = detectBlankIndices(
+      questions.map((q) => normalizeWs(q.text)).join(' '),
+    )
   }
-  const parsedQuestions: JapaneseTranslateWordOrderCombination[] = questions.map((q) => {
-    const body = q.querySelector('body')
-    const bodyText = normalizeWs(body?.text ?? '')
-    const words = parseCircledWordList(bodyText).map((w) => ({
-      type: 'EnglishChunk',
-      text: w.text,
-    }))
-    const choicesNode = q.querySelector('choices')
-    const choiceEls = choicesNode?.querySelectorAll('choice') ?? []
-    const choices = choiceEls
-      .map((c) => parsePairChoiceText(c.text))
-      .filter((x): x is number[] => Array.isArray(x) && x.length > 0)
-      .map((pair) => ({ type: 'MultipleNumberChoice', choices: pair }))
+  const parsedQuestions: JapaneseTranslateWordOrderCombination[] =
+    questions.map((q) => {
+      const body = q.querySelector('body')
+      const bodyText = normalizeWs(body?.text ?? '')
+      const words = parseCircledWordList(bodyText).map((w) => ({
+        type: 'EnglishChunk',
+        text: w.text,
+      }))
+      const choicesNode = q.querySelector('choices')
+      const choiceEls = choicesNode?.querySelectorAll('choice') ?? []
+      const choices = choiceEls
+        .map((c) => parsePairChoiceText(c.text))
+        .filter((x): x is number[] => Array.isArray(x) && x.length > 0)
+        .map((pair) => ({ type: 'MultipleNumberChoice', choices: pair }))
 
-    return {
-      type: 'JapaneseTranslateWordOrderCombination',
-      index: parseQuestionIndex(q),
-      question: bodyText,
-      words,
-      choices,
-      answerIndex: answerIndex(choicesNode),
-    }
-  })
+      return {
+        type: 'JapaneseTranslateWordOrderCombination',
+        index: parseQuestionIndex(q),
+        question: bodyText,
+        words,
+        choices,
+        answerIndex: answerIndex(choicesNode),
+      }
+    })
 
-  return { type: 'JapaneseTranslateWordOrderCombinationSection', blankIndices, questions: parsedQuestions }
+  return {
+    type: 'JapaneseTranslateWordOrderCombinationSection',
+    blankIndices,
+    questions: parsedQuestions,
+  }
 }
 
 function parseReadingSection(section: HTMLElement): ReadingSection[] {
@@ -496,10 +514,18 @@ function parseReadingSection(section: HTMLElement): ReadingSection[] {
 
   if (!contents.length) {
     if (questions.length && questions.every(isWordOrderQuestion)) {
-      out.push(parseWordOrderSection(questions, questions.map((q) => q.text).join(' ')))
+      out.push(
+        parseWordOrderSection(
+          questions,
+          questions.map((q) => q.text).join(' '),
+        ),
+      )
       return out
     }
-    out.push({ type: 'ShortSentenceClozeSection', questions: questions.map(parseShortSentenceCloze) })
+    out.push({
+      type: 'ShortSentenceClozeSection',
+      questions: questions.map(parseShortSentenceCloze),
+    })
     return out
   }
 
@@ -538,7 +564,7 @@ function parseReadingSection(section: HTMLElement): ReadingSection[] {
     if (tag !== 'question') continue
     const explicit = resolveForKey(it)
     const key = explicit ?? currentKey
-    if (key && qsByKey.has(key)) qsByKey.get(key)!.push(it)
+    if (key && qsByKey.has(key)) qsByKey.get(key)?.push(it)
   }
 
   const hintedText = contents.map((c) => normalizeWs(c.text)).join(' ')
@@ -552,8 +578,14 @@ function parseReadingSection(section: HTMLElement): ReadingSection[] {
   }
 
   const contentGroups = contentOrder
-    .map((k) => ({ content: contentByIndex.get(k), questions: qsByKey.get(k) ?? [] }))
-    .filter((g) => g.content && g.questions.length) as { content: HTMLElement; questions: HTMLElement[] }[]
+    .map((k) => ({
+      content: contentByIndex.get(k),
+      questions: qsByKey.get(k) ?? [],
+    }))
+    .filter((g) => g.content && g.questions.length) as {
+    content: HTMLElement
+    questions: HTMLElement[]
+  }[]
 
   if (contentGroups.length >= 2) {
     out.push({
@@ -575,11 +607,19 @@ function parseReadingSection(section: HTMLElement): ReadingSection[] {
 
   // Orphan questions (not in any mapped group): keep as separate cloze / word-order section.
   const groupedQuestions = new Set<HTMLElement>()
-  for (const g of contentGroups) for (const q of g.questions) groupedQuestions.add(q)
-  const orphan = questions.filter((q) => !groupedQuestions.has(q) && !resolveForKey(q))
+  for (const g of contentGroups)
+    for (const q of g.questions) groupedQuestions.add(q)
+  const orphan = questions.filter(
+    (q) => !groupedQuestions.has(q) && !resolveForKey(q),
+  )
   if (orphan.length) {
-    if (orphan.every(isWordOrderQuestion)) out.push(parseWordOrderSection(orphan, hintedText))
-    else out.push({ type: 'ShortSentenceClozeSection', questions: orphan.map(parseShortSentenceCloze) })
+    if (orphan.every(isWordOrderQuestion))
+      out.push(parseWordOrderSection(orphan, hintedText))
+    else
+      out.push({
+        type: 'ShortSentenceClozeSection',
+        questions: orphan.map(parseShortSentenceCloze),
+      })
   }
 
   return out
@@ -800,7 +840,7 @@ async function main() {
     if ((await outFile.exists()) && !overwrite) {
       throw new Error(`Refusing to overwrite: ${outPath} (pass --overwrite)`)
     }
-    await Bun.write(outPath, JSON.stringify(test, null, 2) + '\n')
+    await Bun.write(outPath, `${JSON.stringify(test, null, 2)}\n`)
   }
 }
 

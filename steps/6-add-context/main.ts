@@ -1,25 +1,26 @@
 // vocablist に訳や品詞や例文を追加する
 
-import { streamText } from 'ai'
-import dedent from 'ts-dedent'
+import { existsSync } from 'node:fs'
+import * as fs from 'node:fs/promises'
 import { rakutenAI } from '@evex/rakutenai'
-import { tqdm, TqdmProgress } from 'node-console-progress-bar-tqdm'
 import { TextLineStream } from '@std/streams'
+import { toJsonSchema } from '@valibot/to-json-schema'
+import { streamText } from 'ai'
+import { TqdmProgress } from 'node-console-progress-bar-tqdm'
+import pLimit from 'p-limit'
+import dedent from 'ts-dedent'
+import * as v from 'valibot'
+import { source } from './load'
 import {
-  VocabEntrySchema,
-  VocabEntryLLMOutputSchema,
   type VocabEntry,
   type VocabEntryLLMOutput,
+  VocabEntryLLMOutputSchema,
+  VocabEntrySchema,
 } from './schema'
-import { source } from './load'
-import { toJsonSchema } from '@valibot/to-json-schema'
-import * as v from 'valibot'
-import pLimit from 'p-limit'
-import * as fs from 'node:fs/promises'
-import { appendFile, existsSync } from 'node:fs'
 
 const PROMPT = dedent`
   英語学習のため、以下の単語をもとに、各単語すべてについてそれぞれ以下の形式のJSONLに変換しなさい。Output only the JSONL without any extra text.
+  phrase の処理は、直訳ではなく自然な日本語訳にすること。
   <format>
     ${JSON.stringify(toJsonSchema(VocabEntrySchema))}
   </format>
@@ -31,7 +32,7 @@ const PROMPT = dedent`
 
 const finishedWords = new Set<string>()
 
-const outputPath = './steps/6-add-context/vocablist-with-context.jsonl'
+const outputPath = './data/vocab/metadata.jsonl'
 if (existsSync(outputPath)) {
   const data = await Bun.file(outputPath).text()
   const lines = data.split('\n').filter((line) => line.trim().length > 0)
@@ -64,7 +65,7 @@ async function processEntries(entries: typeof source) {
   const prompt = dedent`
     ${PROMPT}
     target words:
-    ${entries.map((e) => `- ${e.vocab}`).join('\n')}
+    ${entries.map((e) => `- ${JSON.stringify(e.vocab)}`).join('\n')}
   `
   const stream = streamText({
     model: rakutenAI('normal'),
@@ -119,7 +120,8 @@ async function processEntries(entries: typeof source) {
             '4': original.rank_4 as number,
             '5': original.rank_5 as number,
           },
-        })}\n`,
+          isTypo: parsed.isTypo,
+        } satisfies VocabEntry)}\n`,
       ),
     )
     finishedWords.add(parsed.word)

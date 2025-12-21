@@ -1,11 +1,11 @@
-import type { Chunk } from "./text"
+import type { Chunk } from './text'
 
 export interface ConversationLine {
-  type: "ConversationLine"
+  type: 'ConversationLine'
   speaker: string
   text: Chunk[]
 }
 export interface Conversation {
-  type: "Conversation"
+  type: 'Conversation'
   lines: ConversationLine[]
 }

@@ -28,7 +28,7 @@ const cols = [
   'rank_4',
   'rank_5',
 ] as const
-export const source = (rows.map((row) =>
+export const source = rows.map((row) =>
   Object.fromEntries(
     row.split(',').map((cell, i) => {
       const num = Number.parseFloat(cell)
@@ -39,4 +39,4 @@ export const source = (rows.map((row) =>
 ) as (Record<(typeof cols)[number], string | number> & {
   vocab: string
   type: 'unigram' | 'phrase'
-})[])
+})[]

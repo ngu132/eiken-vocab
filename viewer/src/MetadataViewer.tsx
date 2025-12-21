@@ -1,4 +1,11 @@
-import { For, Show, createEffect, createMemo, createSignal, onMount } from 'solid-js'
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  onMount,
+  Show,
+} from 'solid-js'
 
 type NumberMap = Record<string, number>
 
@@ -14,6 +21,7 @@ type Meaning = {
 type MetadataItem = {
   word: string
   isPhrase: boolean
+  isTypo?: boolean
   meanings: Meaning[]
   score?: NumberMap
   count?: NumberMap
@@ -70,20 +78,31 @@ function formatNumber(value: number | undefined, digits = 3): string {
   return value.toFixed(digits)
 }
 
-function getSortValue(row: MetadataRow, metric: 'count' | 'rank' | 'score', level: LevelKey): number {
+function getSortValue(
+  row: MetadataRow,
+  metric: 'count' | 'rank' | 'score',
+  level: LevelKey,
+): number {
   if (metric === 'count') return row.count?.[level] ?? 0
   if (metric === 'rank') return row.rank?.[level] ?? Number.NEGATIVE_INFINITY
   return row.score?.[level] ?? Number.NEGATIVE_INFINITY
 }
 
-function formatSortValue(value: number, metric: 'count' | 'rank' | 'score'): string {
+function formatSortValue(
+  value: number,
+  metric: 'count' | 'rank' | 'score',
+): string {
   if (!Number.isFinite(value)) return '-'
   if (metric === 'count') return String(Math.trunc(value))
   return value.toFixed(3)
 }
 
 function sanitizeTsvField(value: string): string {
-  return value.replaceAll('\t', ' ').replaceAll('\r', ' ').replaceAll('\n', ' ').trim()
+  return value
+    .replaceAll('\t', ' ')
+    .replaceAll('\r', ' ')
+    .replaceAll('\n', ' ')
+    .trim()
 }
 
 function getQuizletDefinition(row: MetadataRow): string {
@@ -111,19 +130,24 @@ export default function MetadataViewer() {
   const [parsed, setParsed] = createSignal(0)
   const [total, setTotal] = createSignal(0)
   const [badLines, setBadLines] = createSignal(0)
-  const [starSkipped, setStarSkipped] = createSignal(0)
+  const [typoCount, setTypoCount] = createSignal(0)
 
   const [query, setQuery] = createSignal('')
   const [showWords, setShowWords] = createSignal(true)
   const [showPhrases, setShowPhrases] = createSignal(true)
+  const [showTypos, setShowTypos] = createSignal(false)
   const [minCount, setMinCount] = createSignal(0)
-  const [sortMetric, setSortMetric] = createSignal<'count' | 'rank' | 'score'>('rank')
+  const [sortMetric, setSortMetric] = createSignal<'count' | 'rank' | 'score'>(
+    'rank',
+  )
   const [sortLevel, setSortLevel] = createSignal<LevelKey>('5')
   const [sortDir, setSortDir] = createSignal<'asc' | 'desc'>('desc')
   const [page, setPage] = createSignal(1)
   const [pageSize, setPageSize] = createSignal(50)
   const [selectedId, setSelectedId] = createSignal<number | null>(null)
-  const [copyStatus, setCopyStatus] = createSignal<'idle' | 'copied' | 'failed'>('idle')
+  const [copyStatus, setCopyStatus] = createSignal<
+    'idle' | 'copied' | 'failed'
+  >('idle')
 
   onMount(async () => {
     setLoading(true)
@@ -133,7 +157,8 @@ export default function MetadataViewer() {
     let text: string
     try {
       const res = await fetch(url)
-      if (!res.ok) throw new Error(`failed to fetch: ${res.status} ${res.statusText}`)
+      if (!res.ok)
+        throw new Error(`failed to fetch: ${res.status} ${res.statusText}`)
       text = await res.text()
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -149,12 +174,12 @@ export default function MetadataViewer() {
     setTotal(lines.length)
     setParsed(0)
     setBadLines(0)
-    setStarSkipped(0)
+    setTypoCount(0)
 
     const parsedRows: MetadataRow[] = []
     let index = 0
     let bad = 0
-    let skipped = 0
+    let typos = 0
 
     const parseChunk = () => {
       const chunkSize = 500
@@ -165,12 +190,12 @@ export default function MetadataViewer() {
           bad += 1
           continue
         }
-        if (item.word.includes('☆')) {
-          skipped += 1
-          continue
-        }
+        const isTypo = item.isTypo === true
+        if (isTypo) typos += 1
 
-        const primaryMeaning = Array.isArray(item.meanings) ? item.meanings[0] : undefined
+        const primaryMeaning = Array.isArray(item.meanings)
+          ? item.meanings[0]
+          : undefined
         parsedRows.push({
           ...item,
           id: index,
@@ -183,7 +208,7 @@ export default function MetadataViewer() {
 
       setParsed(index)
       setBadLines(bad)
-      setStarSkipped(skipped)
+      setTypoCount(typos)
 
       if (index < lines.length) {
         setTimeout(parseChunk, 0)
@@ -201,6 +226,7 @@ export default function MetadataViewer() {
     query()
     showWords()
     showPhrases()
+    showTypos()
     minCount()
     sortMetric()
     sortLevel()
@@ -212,12 +238,14 @@ export default function MetadataViewer() {
     const q = query().trim().toLowerCase()
     const allowWords = showWords()
     const allowPhrases = showPhrases()
+    const allowTypos = showTypos()
     const min = minCount()
     const list = rows()
 
     return list.filter((row) => {
       if (!allowWords && !row.isPhrase) return false
       if (!allowPhrases && row.isPhrase) return false
+      if (!allowTypos && row.isTypo) return false
       if (row.sumCount < min) return false
       if (q.length === 0) return true
       return (
@@ -245,7 +273,9 @@ export default function MetadataViewer() {
     return list
   })
 
-  const totalPages = createMemo(() => Math.max(1, Math.ceil(sorted().length / pageSize())))
+  const totalPages = createMemo(() =>
+    Math.max(1, Math.ceil(sorted().length / pageSize())),
+  )
   const pageRows = createMemo(() => {
     const size = pageSize()
     const start = (page() - 1) * size
@@ -271,7 +301,7 @@ export default function MetadataViewer() {
       return `${term}\t${def}`
     })
 
-    const tsv = lines.join('\n') + '\n'
+    const tsv = `${lines.join('\n')}\n`
 
     try {
       await navigator.clipboard.writeText(tsv)
@@ -335,13 +365,23 @@ export default function MetadataViewer() {
                 phrases
               </label>
               <label class="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={showTypos()}
+                  onChange={(e) => setShowTypos(e.currentTarget.checked)}
+                />
+                typos
+              </label>
+              <label class="flex items-center gap-2">
                 <span class="text-slate-600">min count</span>
                 <input
                   class="w-24 rounded-md border px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-slate-300"
                   type="number"
                   min="0"
                   value={minCount()}
-                  onInput={(e) => setMinCount(Math.max(0, Number(e.currentTarget.value)))}
+                  onInput={(e) =>
+                    setMinCount(Math.max(0, Number(e.currentTarget.value)))
+                  }
                 />
               </label>
             </div>
@@ -353,7 +393,11 @@ export default function MetadataViewer() {
               <select
                 class="mt-1 w-40 rounded-md border px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-300"
                 value={sortMetric()}
-                onChange={(e) => setSortMetric(e.currentTarget.value as 'count' | 'rank' | 'score')}
+                onChange={(e) =>
+                  setSortMetric(
+                    e.currentTarget.value as 'count' | 'rank' | 'score',
+                  )
+                }
               >
                 <option value="count">count</option>
                 <option value="rank">rank</option>
@@ -365,9 +409,13 @@ export default function MetadataViewer() {
               <select
                 class="mt-1 w-28 rounded-md border px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-300"
                 value={sortLevel()}
-                onChange={(e) => setSortLevel(e.currentTarget.value as LevelKey)}
+                onChange={(e) =>
+                  setSortLevel(e.currentTarget.value as LevelKey)
+                }
               >
-                <For each={LEVEL_KEYS}>{(key) => <option value={key}>{key}</option>}</For>
+                <For each={LEVEL_KEYS}>
+                  {(key) => <option value={key}>{key}</option>}
+                </For>
               </select>
             </label>
             <label class="text-sm">
@@ -375,7 +423,9 @@ export default function MetadataViewer() {
               <select
                 class="mt-1 w-28 rounded-md border px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-300"
                 value={sortDir()}
-                onChange={(e) => setSortDir(e.currentTarget.value as 'asc' | 'desc')}
+                onChange={(e) =>
+                  setSortDir(e.currentTarget.value as 'asc' | 'desc')
+                }
               >
                 <option value="asc">asc</option>
                 <option value="desc">desc</option>
@@ -399,10 +449,18 @@ export default function MetadataViewer() {
 
         <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-slate-600">
           <div>
-            <Show when={!loading()} fallback={<span>loading... {parsed()}/{total()}</span>}>
+            <Show
+              when={!loading()}
+              fallback={
+                <span>
+                  loading... {parsed()}/{total()}
+                </span>
+              }
+            >
               <span>
-                loaded {rows().length.toLocaleString()} rows (bad: {badLines().toLocaleString()}, ☆ skipped:{' '}
-                {starSkipped().toLocaleString()}) / filtered{' '}
+                loaded {rows().length.toLocaleString()} rows (bad:{' '}
+                {badLines().toLocaleString()}, typos:{' '}
+                {typoCount().toLocaleString()}) / filtered{' '}
                 {sorted().length.toLocaleString()}
               </span>
             </Show>
@@ -414,7 +472,12 @@ export default function MetadataViewer() {
               disabled={loading() || sorted().length === 0}
               title="英単語<TAB>日本語 の TSV をクリップボードへコピー"
             >
-              <Show when={copyStatus() === 'copied'} fallback={copyStatus() === 'failed' ? 'Copy failed' : 'Copy for Quizlet'}>
+              <Show
+                when={copyStatus() === 'copied'}
+                fallback={
+                  copyStatus() === 'failed' ? 'Copy failed' : 'Copy for Quizlet'
+                }
+              >
                 Copied
               </Show>
             </button>
@@ -475,7 +538,9 @@ export default function MetadataViewer() {
                     }
                     onClick={() => setSelectedId(row.id)}
                   >
-                    <td class="whitespace-nowrap px-3 py-2 text-slate-500">{i() + 1 + (page() - 1) * pageSize()}</td>
+                    <td class="whitespace-nowrap px-3 py-2 text-slate-500">
+                      {i() + 1 + (page() - 1) * pageSize()}
+                    </td>
                     <td class="whitespace-nowrap px-3 py-2 font-mono">
                       {row.word}
                       <Show when={row.isPhrase}>
@@ -483,14 +548,28 @@ export default function MetadataViewer() {
                           phrase
                         </span>
                       </Show>
+                      <Show when={row.isTypo}>
+                        <span class="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+                          typo
+                        </span>
+                      </Show>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-2">{row.primaryClass}</td>
+                    <td class="whitespace-nowrap px-3 py-2">
+                      {row.primaryClass}
+                    </td>
                     <td class="min-w-96 px-3 py-2">{row.primaryTranslation}</td>
                     <td class="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">
-                      {formatSortValue(getSortValue(row, sortMetric(), sortLevel()), sortMetric())}
+                      {formatSortValue(
+                        getSortValue(row, sortMetric(), sortLevel()),
+                        sortMetric(),
+                      )}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">{row.sumCount}</td>
-                    <td class="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">{row.maxCount}</td>
+                    <td class="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">
+                      {row.sumCount}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">
+                      {row.maxCount}
+                    </td>
                     <td class="whitespace-nowrap px-3 py-2 font-mono text-xs text-slate-600">
                       {formatLevels(row.count)}
                     </td>
@@ -510,7 +589,9 @@ export default function MetadataViewer() {
           <section class="rounded-lg border bg-white p-4">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div class="min-w-0">
-                <h2 class="truncate font-mono text-lg font-semibold">{row().word}</h2>
+                <h2 class="truncate font-mono text-lg font-semibold">
+                  {row().word}
+                </h2>
                 <div class="mt-1 text-sm text-slate-600">
                   <span>{row().isPhrase ? 'phrase' : 'word'}</span>
                   <span class="mx-2">·</span>
@@ -519,7 +600,10 @@ export default function MetadataViewer() {
                   <span>maxCount {row().maxCount}</span>
                 </div>
               </div>
-              <button class="rounded-md border bg-white px-3 py-1 text-sm" onClick={() => setSelectedId(null)}>
+              <button
+                class="rounded-md border bg-white px-3 py-1 text-sm"
+                onClick={() => setSelectedId(null)}
+              >
                 Close
               </button>
             </div>
@@ -528,16 +612,22 @@ export default function MetadataViewer() {
               <div class="space-y-3">
                 <div class="rounded-md border p-3">
                   <div class="text-xs font-medium text-slate-500">Counts</div>
-                  <div class="mt-1 font-mono text-sm">{formatLevels(row().count)}</div>
+                  <div class="mt-1 font-mono text-sm">
+                    {formatLevels(row().count)}
+                  </div>
                 </div>
                 <div class="rounded-md border p-3">
-                  <div class="text-xs font-medium text-slate-500">Scores (selected)</div>
+                  <div class="text-xs font-medium text-slate-500">
+                    Scores (selected)
+                  </div>
                   <div class="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-xs">
                     <For each={LEVEL_KEYS}>
                       {(key) => (
                         <>
                           <div class="text-slate-600">{key}</div>
-                          <div class="text-right tabular-nums">{formatNumber(row().score?.[key])}</div>
+                          <div class="text-right tabular-nums">
+                            {formatNumber(row().score?.[key])}
+                          </div>
                         </>
                       )}
                     </For>
@@ -553,19 +643,31 @@ export default function MetadataViewer() {
                       {(meaning) => (
                         <div class="rounded-md bg-slate-50 p-3">
                           <div class="flex flex-wrap items-center gap-2 text-sm">
-                            <span class="rounded bg-white px-2 py-0.5 text-xs text-slate-600">{meaning.class}</span>
-                            <span class="font-medium">{meaning.translation}</span>
+                            <span class="rounded bg-white px-2 py-0.5 text-xs text-slate-600">
+                              {meaning.class}
+                            </span>
+                            <span class="font-medium">
+                              {meaning.translation}
+                            </span>
                           </div>
-                          <Show when={meaning.examplePhrase || meaning.exampleSentence}>
+                          <Show
+                            when={
+                              meaning.examplePhrase || meaning.exampleSentence
+                            }
+                          >
                             <div class="mt-2 space-y-1 text-xs text-slate-700">
                               <Show when={meaning.examplePhrase}>
-                                <div class="font-mono">{meaning.examplePhrase}</div>
+                                <div class="font-mono">
+                                  {meaning.examplePhrase}
+                                </div>
                               </Show>
                               <Show when={meaning.examplePhraseTranslation}>
                                 <div>{meaning.examplePhraseTranslation}</div>
                               </Show>
                               <Show when={meaning.exampleSentence}>
-                                <div class="font-mono">{meaning.exampleSentence}</div>
+                                <div class="font-mono">
+                                  {meaning.exampleSentence}
+                                </div>
                               </Show>
                               <Show when={meaning.exampleSentenceTranslation}>
                                 <div>{meaning.exampleSentenceTranslation}</div>
@@ -579,7 +681,9 @@ export default function MetadataViewer() {
                 </div>
 
                 <details class="rounded-md border p-3">
-                  <summary class="cursor-pointer text-xs font-medium text-slate-500">Raw JSON</summary>
+                  <summary class="cursor-pointer text-xs font-medium text-slate-500">
+                    Raw JSON
+                  </summary>
                   <pre class="mt-2 overflow-auto rounded bg-slate-900 p-3 text-xs text-slate-100">
                     {JSON.stringify(row(), null, 2)}
                   </pre>

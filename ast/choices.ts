@@ -1,14 +1,12 @@
-import type { Text } from "./text"
+import type { Text } from './text'
 
 export interface EnglishPhraseChoice {
-  type: "EnglishPhraseChoice"
+  type: 'EnglishPhraseChoice'
   choice: Text
 }
 export interface MultipleNumberChoice {
-  type: "MultipleNumberChoice"
+  type: 'MultipleNumberChoice'
   choices: number[]
 }
 
-export type Choice =
-  | EnglishPhraseChoice
-  | MultipleNumberChoice
+export type Choice = EnglishPhraseChoice | MultipleNumberChoice

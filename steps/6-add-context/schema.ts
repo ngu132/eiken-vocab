@@ -26,8 +26,11 @@ export type Meaning = v.InferOutput<typeof MeaningSchema>
 export const VocabEntryLLMOutputSchema = v.object({
   word: v.string(),
   meanings: v.array(MeaningSchema),
+  isTypo: v.optional(v.boolean(), false),
 })
-export type VocabEntryLLMOutput = v.InferOutput<typeof VocabEntryLLMOutputSchema>
+export type VocabEntryLLMOutput = v.InferOutput<
+  typeof VocabEntryLLMOutputSchema
+>
 export const VocabEntrySchema = v.object({
   word: v.string(),
   isPhrase: v.boolean(),
@@ -59,5 +62,6 @@ export const VocabEntrySchema = v.object({
     '4': v.number(),
     '5': v.number(),
   }),
+  isTypo: v.boolean(),
 })
 export type VocabEntry = v.InferOutput<typeof VocabEntrySchema>

@@ -1,18 +1,18 @@
+import { existsSync } from 'node:fs'
+import { mkdir } from 'node:fs/promises'
+import * as path from 'node:path'
 import { User } from '@evex/rakutenai'
 import { Glob } from 'bun'
-import { existsSync } from 'node:fs'
-import * as path from 'node:path'
+import pLimit from 'p-limit'
 import dedent from 'ts-dedent'
 import { EIKEN_SECTIONS } from './eiken'
-import { mkdir } from 'node:fs/promises'
-import pLimit from 'p-limit'
 
 async function processFile(filePath: string) {
   console.log('Processing file:', filePath)
   const name = path.basename(filePath)
   const [grade, yearStr, adminStr] = name.replace('.pdf', '').split('_')
-  const year = Number.parseInt(yearStr ?? '0', 10)
-  const admin = Number.parseInt(adminStr ?? '0', 10)
+  const _year = Number.parseInt(yearStr ?? '0', 10)
+  const _admin = Number.parseInt(adminStr ?? '0', 10)
   const sections = EIKEN_SECTIONS[grade as keyof typeof EIKEN_SECTIONS]
 
   const user = await User.create()

@@ -1,4 +1,4 @@
-import type { ListeningSection, ReadingSection } from "./section"
+import type { ListeningSection, ReadingSection } from './section'
 
 export interface Test {
   type: 'Test'

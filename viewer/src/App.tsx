@@ -7,7 +7,9 @@ function App() {
       <header class="border-b bg-white">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <div class="min-w-0">
-            <h1 class="truncate text-lg font-semibold">metadata.jsonl viewer</h1>
+            <h1 class="truncate text-lg font-semibold">
+              metadata.jsonl viewer
+            </h1>
             <p class="truncate text-sm text-slate-600">
               `viewer/src/assets/metadata.jsonl` を読み込んで一覧/詳細表示します
             </p>

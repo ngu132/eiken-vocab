@@ -7,7 +7,6 @@ from typing import Iterable
 import spacy
 from spacy.tokens import Doc, Token
 
-
 # -------------------------
 # Normalization
 # -------------------------
