@@ -1,3 +1,4 @@
+import { createSignal, onMount } from 'solid-js'
 import './App.css'
 import MetadataViewer from './MetadataViewer'
 
@@ -59,46 +60,117 @@ function HFMarkIcon(props: { class?: string }) {
   )
 }
 function App() {
+  const [isDark, setIsDark] = createSignal(false)
+
+  onMount(() => {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setIsDark(true)
+    }
+  })
+
   return (
-    <div class="min-h-dvh bg-slate-50 text-slate-900">
-      <header class="border-b bg-white">
-        <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <div class="min-w-0">
-            <h1 class="truncate text-lg font-semibold">
-              metadata.jsonl viewer
-            </h1>
-            <p class="truncate text-sm text-slate-600">
-              `viewer/src/assets/metadata.jsonl` を読み込んで一覧/詳細表示します
-            </p>
+    <div
+      class={`flex h-screen flex-col overflow-hidden font-sans transition-colors duration-300 ${
+        isDark()
+          ? 'dark bg-slate-950 text-slate-100'
+          : 'bg-[#f8fafc] text-slate-900'
+      }`}
+    >
+      <header class="z-10 shrink-0 border-b border-slate-200/80 bg-white/70 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80">
+        <div class="mx-auto flex max-w-400 items-center justify-between gap-4 px-6 py-4">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <title>Book Icon</title>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h1 class="truncate text-xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">
+                Eiken Vocab Viewer
+              </h1>
+              <p class="truncate text-xs font-medium text-slate-500 uppercase tracking-wider">
+                Interactive Metadata Explorer
+              </p>
+            </div>
           </div>
-          <div class="shrink-0">
-            <div class="flex items-center gap-3 text-sm text-slate-600">
+
+          <div class="flex items-center gap-4 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsDark(!isDark())}
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+              title={isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {isDark() ? (
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <title>Light Mode</title>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <title>Dark Mode</title>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                  />
+                </svg>
+              )}
+            </button>
+
+            <div class="flex items-center gap-2 rounded-full bg-slate-100 p-1 dark:bg-slate-800">
               <a
-                class="inline-flex items-center gap-1 rounded px-1 py-0.5 text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
                 href="https://github.com/pnsk-lab/eiken-vocab"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="GitHub: pnsk-lab/eiken-vocab"
-                title="GitHub: pnsk-lab/eiken-vocab"
+                title="GitHub Repository"
               >
                 <GithubMarkIcon class="h-5 w-5" />
               </a>
               <a
-                class="inline-flex items-center gap-1 rounded px-1 py-0.5 text-slate-600 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-all hover:bg-white hover:text-slate-900 hover:shadow-sm"
                 href="https://huggingface.co/datasets/nakasyou/eiken-vocab"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Hugging Face: nakasyou/eiken-vocab"
-                title="Hugging Face: nakasyou/eiken-vocab"
+                title="Hugging Face Dataset"
               >
                 <HFMarkIcon class="h-5 w-5" />
-                <span class="sr-only">Hugging Face</span>
               </a>
             </div>
           </div>
         </div>
       </header>
-      <main class="mx-auto max-w-6xl px-4 py-4">
+
+      <main class="flex-1 overflow-hidden">
         <MetadataViewer />
       </main>
     </div>

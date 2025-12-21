@@ -1,1 +1,49 @@
 @import "tailwindcss";
+
+/* Sleek Scrollbar Styling */
+@layer base {
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        /* slate-300 */
+        border-radius: 20px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+        transition: background 0.2s ease;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+        /* slate-400 */
+        border: 1px solid transparent;
+        background-clip: content-box;
+    }
+
+    .dark ::-webkit-scrollbar-thumb {
+        background: #334155;
+        /* slate-700 */
+    }
+
+    .dark ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+        /* slate-600 */
+    }
+
+    /* Firefox Support */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .dark * {
+        scrollbar-color: #334155 transparent;
+    }
+}
